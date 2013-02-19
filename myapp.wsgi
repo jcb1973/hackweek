@@ -1,4 +1,4 @@
-import urllib2
+import urllib2, json
 import re
 import lxml.html
 
@@ -9,7 +9,9 @@ def find_albums(str_html):
   r = []
   for item in albums:
     t = lxml.html.fromstring(item)
-    name = t.text_content()
+    name = '{\"title\":\"'
+    name += t.text_content()
+    name += '\"}' 
     r.append (re.sub("\n", " ", name))
   return r  
 
@@ -38,12 +40,15 @@ def application(environment, start_response):
   request = Request(environment)
   params = request.params
   post = request.POST
-
+  page = "["
   stuff= do_scrape(params.getall('name'))
-  page = '\n'.join(stuff)
+  page += ','.join(stuff)
+  page += "]"
+  #json_page = json.dumps(page)
+  print (page)
 
   response = Response(body = page,
-                      content_type = "text/html",
+                      content_type = "application/json",
                       charset = "utf8",
                       status = "200 OK")
 
