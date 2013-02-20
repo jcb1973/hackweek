@@ -19,15 +19,13 @@ def find_albums(str_html, foo):
     r.append (re.sub("\n", " ", name))
   fo = open('/tmp/'+foo, "wb")
   fo.write( ''.join(r) );
-
-  # Close opend file
   fo.close() 
   return r  
 
 def do_scrape(param):
   name = ''.join(param)
   foo = name.replace(" ", "_")
-  # is there a file?
+
   try:
     f = open('/tmp/'+foo, "r") 
     str = f.read();
@@ -60,7 +58,7 @@ def application(environment, start_response):
   page = "["
   stuff= do_scrape(params.getall('name'))
   if type(stuff)==type(list()):
-    page += ','.join(stuff)
+    page += ''.join(stuff)
   else:
     page += stuff 
   page += "]"
