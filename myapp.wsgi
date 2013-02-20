@@ -1,6 +1,8 @@
-import urllib2, json
+import urllib2, json, sys
 import re
 import lxml.html
+reload(sys)
+sys.setdefaultencoding("utf-8")
 
 def find_albums(str_html):
 
@@ -44,8 +46,6 @@ def application(environment, start_response):
   stuff= do_scrape(params.getall('name'))
   page += ','.join(stuff)
   page += "]"
-  #json_page = json.dumps(page)
-  print (page)
 
   response = Response(body = page,
                       content_type = "application/json",
