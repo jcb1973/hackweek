@@ -21,7 +21,7 @@ def find_albums(str_html, foo):
     name += '\"}'
     r.append (re.sub("\n", " ", name))
   fo = open('/tmp/'+foo, "wb")
-  fo.write( ''.join(r) );
+  fo.write( u''.join(r) );
   fo.close()
   return r
 
@@ -35,9 +35,11 @@ def checkForAlbumsPage(html, name):
     return 0
 
 def do_scrape(param):
-  name = ''.join(param)
-  artist = name.replace(" ", "_")
 
+  name = param.strip(' ').title()
+  artist = name.replace(" ", "_").strip(' ');
+  print artist
+  
   try:
     f = open('/tmp/'+artist, "r")
     str = f.read();
@@ -48,15 +50,15 @@ def do_scrape(param):
     request = urllib2.Request(WIKI_ROOT+artist+'_discography')
     opener = urllib2.build_opener()
     request.add_header('User-Agent', USER_AGENT)
-    html = opener.open(request).read()
+    html = opener.open(request).read().decode('utf-8')
     
     if checkForAlbumsPage(html, name):
       request = urllib2.Request(WIKI_ROOT+artist+'_albums_discography')
       opener = urllib2.build_opener()
       request.add_header('User-Agent', USER_AGENT)
       html = opener.open(request).read()
-      
-    p = re.compile("<span class=\"mw-headline\" id=\"Studio_albums\">Studio albums</span>.*?(Peak.*?positions|Certifications)(.*?)</table>.*?(Soundtrack albums|Live albums)", re.S)
+     
+    p = re.compile("<span class=\"mw-headline\" id=\"Studio_.*?\">Studio.*?</span>.*?(Peak.*?positions|Certifications)(.*?)(Live albums|Compilation|Soundtrack albums)", re.S)
 
     m = p.search(html)
     if m:
@@ -64,6 +66,7 @@ def do_scrape(param):
       return find_albums(table, artist)
     else:
       print 'No match found in: ' +html
+
 def application(environment, start_response):
   from webob import Request, Response
 
