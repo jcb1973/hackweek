@@ -4,6 +4,9 @@ import lxml.html
 reload(sys)
 sys.setdefaultencoding("utf-8")
 
+WIKI_ROOT = 'http://en.wikipedia.org/wiki/'
+USER_AGENT = 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1)'
+
 def find_albums(str_html, foo):
 
   t = "<i>.*?<a href=\"/wiki/.*?\" title=\".*?\">(.*?)</a>.*?</i>"
@@ -22,16 +25,14 @@ def find_albums(str_html, foo):
   fo.close()
   return r
 
-def checkForAlt(html, name):
-  str = "<div id=.*?"+name+"discography</b> may refer to:"
-  str = "discography</b> may refer to:"
+def checkForAlbumsPage(html, name):
+  str = name + " albums discography"
   p = re.compile(str, re.S)
   m = p.search(html)
   if m:
     return 1
   else:  
     return 0
-
 
 def do_scrape(param):
   name = ''.join(param)
@@ -43,28 +44,26 @@ def do_scrape(param):
     f.close()
     return str
   except IOError as e:
-    print 'Oh dear.'
-    request = urllib2.Request('http://en.wikipedia.org/wiki/'+artist+'_discography')
+    print 'No existing scraped content'
+    request = urllib2.Request(WIKI_ROOT+artist+'_discography')
     opener = urllib2.build_opener()
-    request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1)')
+    request.add_header('User-Agent', USER_AGENT)
     html = opener.open(request).read()
     
-    if checkForAlt(html, name):
-      request = urllib2.Request('http://en.wikipedia.org/wiki/'+artist+'_albums_discography')
+    if checkForAlbumsPage(html, name):
+      request = urllib2.Request(WIKI_ROOT+artist+'_albums_discography')
       opener = urllib2.build_opener()
-      request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1)')
+      request.add_header('User-Agent', USER_AGENT)
       html = opener.open(request).read()
       
-    p = re.compile("<span class=\"mw-headline\" id=\"Studio_albums\">Studio albums</span>.*?(Peak.chart.positions|Certifications)(.*?)<\/table>", re.S)
+    p = re.compile("<span class=\"mw-headline\" id=\"Studio_albums\">Studio albums</span>.*?(Peak.*?positions|Certifications)(.*?)</table>.*?(Soundtrack albums|Live albums)", re.S)
 
     m = p.search(html)
     if m:
       table = m.group(2)
+      return find_albums(table, artist)
     else:
-      print 'No match - off to to Bing we go'
-
-    return find_albums(table, artist)
-
+      print 'No match found in: ' +html
 def application(environment, start_response):
   from webob import Request, Response
 
