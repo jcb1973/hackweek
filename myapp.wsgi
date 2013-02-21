@@ -40,8 +40,8 @@ def checkForAlbumsPage(html, name):
     return 0
 
 def do_scrape(param):
-
-  name = param.strip(' ').title()
+  name = ''.join(param)
+  name = name.strip(' ').title()
   artist = name.replace(" ", "_").strip(' ');
   print artist
   simple_page = 0
